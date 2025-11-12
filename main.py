@@ -99,7 +99,7 @@ def main():
         metascore = st.slider(
             "Metascore (Skor Kritikus):",
             min_value=0, max_value=100, value=75, step=1,
-            help="Skor yang diberikan oleh kritikus (rotten tomatoes/metacritic). Paling berpengaruh!"
+            help="Skor yang diberikan oleh kritikus (rotten tomatoes/metacritic)."
         )
 
         # 2. Input Gross/Pendapatan (Penting Kedua)
@@ -120,7 +120,7 @@ def main():
         genre = st.selectbox(
             "Genre Utama:",
             options=unique_genres,
-            help="Pilih salah satu genre utama. Pengaruhnya relatif kecil."
+            help="Pilih salah satu genre utama."
         )
         
         # 5. Input Tahun Rilis (Kurang Penting)
@@ -155,17 +155,9 @@ def main():
                     value=f"{predicted_rating:.2f} / 10", 
                     delta=f"Model: {pipeline['regressor'].__class__.__name__}"
                 )
-                
-                # Tampilkan pesan berdasarkan rating
-                if predicted_rating >= 8.5:
-                    st.balloons()
-                    st.success("Rating ini menunjukkan film Kualitas Masterpiece dan sangat mungkin masuk daftar 'Top Rated'!")
-                elif predicted_rating >= 7.5:
-                    st.info("Rating ini menunjukkan film Kualitas Sangat Baik dan sukses!")
-                else:
-                    st.warning("Rating di bawah 7.5; Film ini mungkin kurang mendapatkan sambutan hangat dari penonton.")
 
 # Jalankan fungsi utama
 if __name__ == "__main__":
 
     main()
+
