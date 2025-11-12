@@ -9,15 +9,11 @@ from sklearn.pipeline import Pipeline
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# --- Konfigurasi dan Konstanta ---
 TARGET_COLUMN = 'rating'
 FEATURES = ['runtime', 'metascore', 'gross(M)', 'release_year', 'genre']
 BEST_MODEL = RandomForestRegressor(random_state=42, n_estimators=100)
 FILE_PATH = "imdb_clean.csv"
 
-# --- Fungsi Pemuatan dan Pelatihan Data (Cache) ---
-
-# Menggunakan st.cache_data untuk caching data
 @st.cache_data
 def load_data(file_path):
     """Memuat dan membersihkan data target."""
@@ -27,15 +23,12 @@ def load_data(file_path):
         st.error(f"File {file_path} tidak ditemukan. Pastikan 'imdb_clean.csv' ada di direktori yang sama.")
         return pd.DataFrame()
 
-    # SOLUSI ERROR: Hapus SEMUA baris di mana 'rating' (target) adalah NaN.
     df_clean = df.dropna(subset=[TARGET_COLUMN]).copy()
-    
-    # Ambil daftar unik genre untuk input Streamlit
+
     unique_genres = df_clean['genre'].dropna().unique().tolist()
     
     return df_clean, unique_genres
 
-# Menggunakan st.cache_resource untuk caching model dan pipeline
 @st.cache_resource
 def train_model(df_clean):
     """Melatih model Random Forest Regressor dengan Preprocessing Pipeline."""
@@ -44,7 +37,6 @@ def train_model(df_clean):
     X = df_clean[FEATURES]
     y = df_clean[TARGET_COLUMN]
 
-    # 2. Definisikan Kolom dan Pipeline Preprocessing
     numerical_features = ['runtime', 'metascore', 'gross(M)', 'release_year']
     categorical_features = ['genre']
 
@@ -52,7 +44,6 @@ def train_model(df_clean):
         ('imputer', SimpleImputer(strategy='mean'))
     ])
 
-    # Perhatian: handle_unknown='ignore' agar OHE tidak error saat prediksi data baru
     categorical_pipeline = Pipeline([
         ('imputer', SimpleImputer(strategy='most_frequent')),
         ('onehot', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
@@ -66,13 +57,11 @@ def train_model(df_clean):
         remainder='drop'
     )
 
-    # 3. Pipeline Penuh
     pipeline = Pipeline([
         ('preprocessor', preprocessor),
         ('regressor', BEST_MODEL)
     ])
 
-    # 4. Pelatihan Model
     pipeline.fit(X, y)
     
     return pipeline, preprocessor
@@ -88,28 +77,27 @@ def main():
         return
 
     st.title("🎬 Prediktor Rating Film IMDb")
-    
-    # --- Main Content: Input Prediksi ---
+
     col1, col2 = st.columns([1.5, 2])
     
     with col1:
         st.header("Masukkan Kriteria Film")
         
-        # 1. Input Metascore (Paling Penting)
+        # 1. Input Metascore
         metascore = st.slider(
             "Metascore (Skor Kritikus):",
             min_value=0, max_value=100, value=75, step=1,
             help="Skor yang diberikan oleh kritikus (rotten tomatoes/metacritic)."
         )
 
-        # 2. Input Gross/Pendapatan (Penting Kedua)
+        # 2. Input Gross/Pendapatan
         gross = st.number_input(
             "Gross (Pendapatan Kotor Global, dalam Juta USD):",
             min_value=0.0, max_value=2000.0, value=50.0, step=1.0, format="%.2f",
-            help="Total pendapatan global film. Gunakan skala dalam Juta USD (50.0 = 50 Juta USD)."
+            help="Total pendapatan global film. Menggunakan skala dalam Juta USD (50.0 = 50 Juta USD)."
         )
 
-        # 3. Input Runtime/Durasi (Penting Ketiga)
+        # 3. Input Runtime/Durasi
         runtime = st.slider(
             "Runtime (Durasi Film, dalam Menit):",
             min_value=60, max_value=240, value=120, step=5,
@@ -123,13 +111,12 @@ def main():
             help="Pilih salah satu genre utama."
         )
         
-        # 5. Input Tahun Rilis (Kurang Penting)
+        # 5. Input Tahun Rilis
         release_year = st.slider(
             "Tahun Rilis:",
             min_value=1920, max_value=pd.Timestamp('now').year, value=2024, step=1
         )
 
-        # Tombol Prediksi
         if st.button("Prediksi Rating IMDb", type="primary"):
             
             # Siapkan data input
@@ -140,8 +127,7 @@ def main():
                 'release_year': [release_year], 
                 'genre': [genre]
             })
-            
-            # Lakukan Prediksi
+
             pipeline, _ = train_model(df_clean)
             predicted_rating = pipeline.predict(input_data)[0]
             
@@ -152,12 +138,12 @@ def main():
                 # Tampilkan hasil
                 st.metric(
                     label="Rating IMDb Diprediksi", 
-                    value=f"{predicted_rating:.2f} / 10", 
-                    delta=f"Model: {pipeline['regressor'].__class__.__name__}"
+                    value=f"{predicted_rating:.2f} / 10"
                 )
 
 # Jalankan fungsi utama
 if __name__ == "__main__":
 
     main()
+
 
