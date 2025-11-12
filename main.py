@@ -88,40 +88,7 @@ def main():
         return
 
     st.title("🎬 Prediktor Rating Film IMDb")
-    st.markdown("Gunakan model **Random Forest** (berdasarkan analisis Orange Anda) untuk memprediksi Rating IMDb film berdasarkan kriteria utama.")
-    st.markdown("---")
     
-    # --- Side Bar: Model Training & Summary ---
-    with st.sidebar:
-        st.header("Ringkasan Model")
-        st.info("Model **Random Forest Regressor** sudah dilatih pada seluruh data yang bersih. Kinerja model ini terbukti paling akurat dalam evaluasi Anda.")
-        st.write(f"Jumlah baris data bersih yang digunakan: **{len(df_clean)}**")
-        
-        # Tampilkan Kepentingan Fitur
-        st.subheader("Faktor Utama (Feature Importance)")
-        
-        # Latih model dan dapatkan imporstansi fitur
-        pipeline, preprocessor = train_model(df_clean)
-        
-        # Hanya tampilkan Feature Importance jika model adalah Random Forest (atau GB)
-        if isinstance(pipeline['regressor'], RandomForestRegressor):
-            importances = pipeline['regressor'].feature_importances_
-            
-            # Mendapatkan nama fitur setelah OHE
-            feature_names_transformed = pipeline['preprocessor'].get_feature_names_out()
-            
-            feature_importance_df = pd.DataFrame({
-                'Feature': feature_names_transformed,
-                'Importance': importances
-            }).sort_values(by='Importance', ascending=False)
-            
-            # Bersihkan nama fitur
-            feature_importance_df['Feature'] = feature_importance_df['Feature'].str.split('__').str[-1]
-            
-            st.dataframe(feature_importance_df.head(5).set_index('Feature'), use_container_width=True)
-            st.caption("Metascore dan Gross adalah faktor dominan dalam model Anda.")
-
-
     # --- Main Content: Input Prediksi ---
     col1, col2 = st.columns([1.5, 2])
     
@@ -200,4 +167,5 @@ def main():
 
 # Jalankan fungsi utama
 if __name__ == "__main__":
+
     main()
